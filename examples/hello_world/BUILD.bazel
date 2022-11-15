@@ -1,0 +1,21 @@
+load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+load("@rules_docker_compose//:defs.bzl", "compose", "service")
+
+py3_image(
+    name = "hello_world",
+    srcs = ["main.py"],
+    main = "main.py",
+    deps = [],
+)
+
+compose(
+    name = "hello_world_compose",
+    services = {
+        ":hello_world_service": "hello_world",
+    },
+)
+
+service(
+    name = "hello_world_service",
+    image = ":hello_world.tar",
+)

@@ -1,0 +1,45 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# docker
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load(
+    "@io_bazel_rules_docker//python3:image.bzl",
+    _py3_image_repos = "repositories",
+)
+
+_py3_image_repos()
+
+load(
+    "@io_bazel_rules_docker//container:pull.bzl",
+    "container_pull",
+)
+
+container_pull(
+    name = "python_image",
+    architecture = "amd64",
+    digest = "sha256:eef39ed128b235c95c723eabe2de05670ba87f3273cc784effe4c3d9d0847c09",
+    registry = "docker.io",
+    repository = "python",
+)
+
+# docker-compose
+local_repository(
+    name = "rules_docker_compose",
+    path = "..",
+)

@@ -1,7 +1,30 @@
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@rules_docker_compose//:defs.bzl", "compose", "network", "service")
 
 container_image(
     name = "httpbin",
     base = "@httpbin//image",
     visibility = ["//visibility:public"],
+)
+
+compose(
+    name = "httpbin_compose",
+    networks = {
+        ":httpbin_network": "httpbin",
+    },
+    services = {
+        ":httpbin_service": "httpbin",
+    },
+)
+
+service(
+    name = "httpbin_service",
+    image = "//:httpbin.tar",
+    networks = ["hello_world"],
+    ports = ["8080:80"],
+)
+
+network(
+    name = "httpbin_network",
+    external = False,
 )

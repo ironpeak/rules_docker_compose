@@ -21,6 +21,7 @@ def _impl(ctx):
                 tar = image_tar,
             ),
             ports = ctx.attr.ports,
+            networks = ctx.attr.networks,
         ),
     ]
 
@@ -29,5 +30,6 @@ service = rule(
     attrs = {
         "image": attr.label(mandatory = True, allow_files = True),
         "ports": attr.string_list(mandatory = False, default = []),
+        "networks": attr.string_list(mandatory = False, default = []),
     },
 )

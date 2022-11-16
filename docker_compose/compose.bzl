@@ -1,4 +1,4 @@
-load("//docker_compose:providers.bzl", "ServiceInfo")
+load("//docker_compose:providers.bzl", "NetworkInfo", "ServiceInfo")
 
 script = """#!/bin/bash
 
@@ -12,16 +12,17 @@ exit 0
 """
 
 def _impl(ctx):
-    docker_compose = {
-        "services": {},
-    }
+    docker_compose = {}
 
+    # services
     image_tars = []
+    docker_compose["services"] = {}
     for target, name in ctx.attr.services.items():
         service_info = target[ServiceInfo]
         docker_compose["services"][name] = {
             "image": service_info.image.name,
             "ports": service_info.ports,
+            "networks": service_info.networks,
         }
         image_tar = ctx.actions.declare_file("{}.{}.tar".format(name, service_info.image.name))
         image_tars.append(image_tar)
@@ -29,6 +30,17 @@ def _impl(ctx):
             target_file = service_info.image.tar,
             output = image_tar,
         )
+
+    # networks
+    docker_compose["networks"] = {}
+    for service in docker_compose["services"].values():
+        for network in service["networks"]:
+            docker_compose["networks"][network] = {}
+    for target, name in ctx.attr.networks.items():
+        network_info = target[NetworkInfo]
+        docker_compose["networks"][name] = {
+            "external": network_info.external,
+        }
 
     docker_compose_yml = ctx.actions.declare_file(ctx.label.name + ".yml")
     ctx.actions.write(
@@ -58,6 +70,7 @@ compose = rule(
     implementation = _impl,
     attrs = {
         "services": attr.label_keyed_string_dict(allow_empty = False, allow_files = False, providers = [ServiceInfo]),
+        "networks": attr.label_keyed_string_dict(allow_empty = True, allow_files = False, providers = [NetworkInfo]),
     },
     executable = True,
 )

@@ -1,5 +1,6 @@
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
-load("@rules_docker_compose//:defs.bzl", "compose", "network", "service")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@rules_docker_compose//:defs.bzl", "compose", "compose_test", "network", "service")
 
 py3_image(
     name = "hello_world",
@@ -8,20 +9,44 @@ py3_image(
     deps = [],
 )
 
+container_image(
+    name = "postgres",
+    base = "@postgres//image",
+    visibility = ["//visibility:public"],
+)
+
 compose(
     name = "hello_world_compose",
     networks = {
-        ":hello_world_network": "hello_world",
+        ":hello_world_network": "network",
     },
     services = {
-        ":hello_world_service": "hello_world",
+        ":hello_world_service": "service",
+        ":hello_world_database": "database",
+    },
+)
+
+compose_test(
+    name = "hello_world_compose_test",
+    networks = {
+        ":hello_world_network": "network",
+    },
+    services = {
+        ":hello_world_service": "test",
+        ":hello_world_database": "database",
     },
 )
 
 service(
     name = "hello_world_service",
-    image = "//:httpbin.tar",
-    networks = ["hello_world"],
+    image = "//hello_world:hello_world.tar",
+    networks = ["network"],
+)
+
+service(
+    name = "hello_world_database",
+    image = "//hello_world:postgres.tar",
+    networks = ["network"],
 )
 
 network(

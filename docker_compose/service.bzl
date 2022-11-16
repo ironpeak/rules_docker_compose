@@ -1,7 +1,7 @@
 load("//docker_compose:providers.bzl", "ServiceInfo")
 
 def _short_path_to_image_name(short_path):
-    if ":" in short_path:
+    if "/" in short_path:
         return "bazel/{}".format(":".join(short_path.rsplit("/", 1)))[:-4]
     return "bazel:{}".format(short_path)[:-4]
 

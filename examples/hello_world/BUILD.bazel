@@ -1,5 +1,5 @@
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
-load("@rules_docker_compose//:defs.bzl", "compose", "service")
+load("@rules_docker_compose//:defs.bzl", "compose", "network", "service")
 
 py3_image(
     name = "hello_world",
@@ -10,6 +10,9 @@ py3_image(
 
 compose(
     name = "hello_world_compose",
+    networks = {
+        ":hello_world_network": "hello_world",
+    },
     services = {
         ":hello_world_service": "hello_world",
     },
@@ -18,5 +21,10 @@ compose(
 service(
     name = "hello_world_service",
     image = "//:httpbin.tar",
-    ports = ["8080:80"],
+    networks = ["hello_world"],
+)
+
+network(
+    name = "hello_world_network",
+    external = False,
 )

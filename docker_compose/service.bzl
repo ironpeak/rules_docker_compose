@@ -1,7 +1,9 @@
 load("//docker_compose:providers.bzl", "ServiceInfo")
 
 def _short_path_to_image_name(short_path):
-    return "bazel/{}".format(":".join(short_path.rsplit("/", 1)))[:-4]
+    if ":" in short_path:
+        return "bazel/{}".format(":".join(short_path.rsplit("/", 1)))[:-4]
+    return "bazel:{}".format(short_path)[:-4]
 
 def _impl(ctx):
     # image
@@ -18,11 +20,7 @@ def _impl(ctx):
                 name = image_name,
                 tar = image_tar,
             ),
-            configs = ctx.attr.configs,
-            networks = ctx.attr.networks,
             ports = ctx.attr.ports,
-            secrets = ctx.attr.secrets,
-            volumes = ctx.attr.volumes,
         ),
     ]
 
@@ -30,10 +28,6 @@ service = rule(
     implementation = _impl,
     attrs = {
         "image": attr.label(mandatory = True, allow_files = True),
-        "configs": attr.string_list(mandatory = False, default = []),
-        "networks": attr.string_list(mandatory = False, default = []),
         "ports": attr.string_list(mandatory = False, default = []),
-        "secrets": attr.string_list(mandatory = False, default = []),
-        "volumes": attr.string_list(mandatory = False, default = []),
     },
 )

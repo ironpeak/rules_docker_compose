@@ -17,5 +17,6 @@ compose(
 
 service(
     name = "hello_world_service",
-    image = ":hello_world.tar",
+    image = "//:httpbin.tar",
+    ports = ["8080:80"],
 )

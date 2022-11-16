@@ -2,18 +2,18 @@ load("//docker_compose:providers.bzl", "ServiceInfo")
 
 script = """#!/bin/bash
 
+set -euo pipefail
+
 {DOCKER_LOAD_IMAGES}
 
 docker compose --file={DOCKER_COMPOSE_FILE} up
+
+exit 0
 """
 
 def _impl(ctx):
     docker_compose = {
         "services": {},
-        "configs": {},
-        "networks": {},
-        "secrets": {},
-        "volumes": {},
     }
 
     image_tars = []
@@ -21,11 +21,7 @@ def _impl(ctx):
         service_info = target[ServiceInfo]
         docker_compose["services"][name] = {
             "image": service_info.image.name,
-            "configs": service_info.configs,
-            "networks": service_info.networks,
             "ports": service_info.ports,
-            "secrets": service_info.secrets,
-            "volumes": service_info.volumes,
         }
         image_tar = ctx.actions.declare_file("{}.{}.tar".format(name, service_info.image.name))
         image_tars.append(image_tar)
@@ -62,10 +58,6 @@ compose = rule(
     implementation = _impl,
     attrs = {
         "services": attr.label_keyed_string_dict(allow_empty = False, allow_files = False, providers = [ServiceInfo]),
-        "configs": attr.label_list(mandatory = False, default = [], allow_files = False),
-        "networks": attr.label_list(mandatory = False, default = [], allow_files = False),
-        "secrets": attr.label_list(mandatory = False, default = [], allow_files = False),
-        "volumes": attr.label_list(mandatory = False, default = [], allow_files = False),
     },
     executable = True,
 )

@@ -31,11 +31,10 @@ load(
 )
 
 container_pull(
-    name = "python_image",
+    name = "httpbin",
     architecture = "amd64",
-    digest = "sha256:eef39ed128b235c95c723eabe2de05670ba87f3273cc784effe4c3d9d0847c09",
     registry = "docker.io",
-    repository = "python",
+    repository = "kennethreitz/httpbin",
 )
 
 # docker-compose

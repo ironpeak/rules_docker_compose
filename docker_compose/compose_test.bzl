@@ -28,6 +28,7 @@ def _impl(ctx):
         docker_compose["services"][name] = {
             "image": service_info.image.name,
             "ports": service_info.ports,
+            "environment": service_info.environment,
             "networks": service_info.networks,
         }
         image_tar = ctx.actions.declare_file("{}.{}.tar".format(name, service_info.image.name))
@@ -75,8 +76,8 @@ def _impl(ctx):
 compose_test = rule(
     implementation = _impl,
     attrs = {
-        "services": attr.label_keyed_string_dict(allow_empty = False, allow_files = False, providers = [ServiceInfo]),
-        "networks": attr.label_keyed_string_dict(allow_empty = True, allow_files = False, providers = [NetworkInfo]),
+        "services": attr.label_keyed_string_dict(mandatory = True, allow_empty = False, allow_files = False, providers = [ServiceInfo]),
+        "networks": attr.label_keyed_string_dict(mandatory = False, allow_empty = True, allow_files = False, default = {}, providers = [NetworkInfo]),
     },
     test = True,
 )

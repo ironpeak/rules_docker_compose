@@ -8,6 +8,7 @@ ServiceInfo = provider(
     fields = [
         "image",
         "ports",
+        "environment",
         "networks",
     ],
 )

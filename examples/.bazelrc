@@ -1,3 +1,1 @@
-common --enable_platform_specific_config
-
-build:macos --@io_bazel_rules_docker//transitions:enable=false
+common --enable_bzlmod

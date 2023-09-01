@@ -1,10 +1,10 @@
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@rules_docker_compose//:defs.bzl", "compose", "network", "service")
+load("@rules_oci//oci:defs.bzl", "oci_tarball")
 
-container_image(
+oci_tarball(
     name = "httpbin",
-    base = "@httpbin//image",
-    visibility = ["//visibility:public"],
+    image = "@httpbin",
+    repo_tags = ["httpbin:latest"],
 )
 
 compose(
@@ -19,9 +19,10 @@ compose(
 
 service(
     name = "httpbin_service",
-    image = "//:httpbin.tar",
+    image = ":httpbin",
     networks = ["hello_world"],
     ports = ["8080:80"],
+    repository = "httpbin:latest",
 )
 
 network(

@@ -1,18 +1,38 @@
-load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("//:py_image_layer.bzl", "py_image_layer")
 load("@rules_docker_compose//:defs.bzl", "compose", "compose_test", "network", "service")
+load("@rules_python//python:defs.bzl", "py_binary")
 
-py3_image(
-    name = "hello_world",
+py_binary(
+    name = "hello_world_bin",
     srcs = ["main.py"],
     main = "main.py",
     deps = [],
 )
 
-container_image(
-    name = "postgres",
-    base = "@postgres//image",
-    visibility = ["//visibility:public"],
+py_image_layer(
+    name = "hello_world_layer",
+    binary = ":hello_world_bin",
+    root = "/opt",
+)
+
+oci_image(
+    name = "image",
+    base = "@python",
+    cmd = ["/opt/hello_world/hello_world_bin"],
+    tars = [":hello_world_layer"],
+)
+
+oci_tarball(
+    name = "hello_world_tar",
+    image = ":image",
+    repo_tags = ["hello_world:latest"],
+)
+
+oci_tarball(
+    name = "postgres_tar",
+    image = "@postgres",
+    repo_tags = ["postgres:latest"],
 )
 
 compose(
@@ -39,14 +59,19 @@ compose_test(
 
 service(
     name = "hello_world_service",
-    image = "//hello_world:hello_world.tar",
+    image = "hello_world_tar",
     networks = ["network"],
+    repository = "hello_world:latest",
 )
 
 service(
     name = "hello_world_database",
-    image = "//hello_world:postgres.tar",
+    environment = {
+        "POSTGRES_PASSWORD": "password",
+    },
+    image = ":postgres_tar",
     networks = ["network"],
+    repository = "postgres:latest",
 )
 
 network(
